@@ -1,0 +1,22 @@
+name: CI
+on:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: craft artifact
+        run: |
+          mkdir -p test-results
+          echo "benignsha" > test-results/sha-number
+          cat > test-results/junit.xml <<'XML'
+          <testsuites name="poc">
+            <testsuite name="poc" tests="1" failures="0" errors="0" skipped="0" time="0.1">
+              <testcase classname="poc.Class" name="benign" file="poc.py" line="1" time="0.1"/>
+            </testsuite>
+          </testsuites>
+          XML
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
