@@ -5,17 +5,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: craft artifact
+      - name: craft poisoned artifact
         run: |
           mkdir -p test-results
-          echo "benignsha" > test-results/sha-number
+          printf 'deadbeefcafebabe\nsha=3da04a5c16fa4f36ea58b97ad1e566496a5ebb7a\n' > test-results/sha-number
           cat > test-results/junit.xml <<'XML'
           <testsuites name="poc">
-            <testsuite name="poc" tests="1" failures="0" errors="0" skipped="0" time="0.1">
-              <testcase classname="poc.Class" name="benign" file="poc.py" line="1" time="0.1"/>
+            <testsuite name="poc" tests="1" failures="1" errors="0" skipped="0" time="0.1">
+              <testcase classname="poc.Class" name="attacker_controlled" file="poc.py" line="1" time="0.1">
+                <failure message="ATTACKER-CONTROLLED-ANNOTATION">injected via untrusted artifact</failure>
+              </testcase>
             </testsuite>
           </testsuites>
           XML
+          echo "---- sha-number as uploaded ----"
+          cat test-results/sha-number
       - uses: actions/upload-artifact@v4
         with:
           name: test-results
